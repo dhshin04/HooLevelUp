@@ -9,53 +9,190 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Build Your Schedule</title>
+
+    <style>
+      .chat-bar {
+        display: flex;
+        align-items: center;
+        background-color: white;
+        border-radius: 24px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        gap: 12px;
+      }
+
+      #search-form {
+        flex: 1;
+      }
+
+      #search-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 24px;
+        background-color: #f5f5f5;
+        font-size: 16px;
+        outline: none;
+        box-sizing: border-box;
+      }
+
+      .button-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .button-group button {
+        border: none;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .button-group button[type="submit"] {
+        background-color: black;
+        color: white;
+      }
+
+      #ai-toggle {
+        background-color: #ddd;
+        color: #333;
+      }
+
+      #ai-toggle.ai-mode {
+        background-color: #1f73b7;
+        color: white;
+      }
+
+      /* List styles */
+      #schedules {
+        list-style: none;
+        padding: 0;
+        margin-top: 1.5rem;
+        width: 100%;
+      }
+
+      .schedule-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .schedule-item .close {
+        color: #888;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .schedule-item .close:hover {
+        color: #d00;
+      }
+    </style>
   </head>
   <body>
-    <form id="search-form" method="post">
-      {% csrf_token %}
-      <input type="text" id="search-input" placeholder="Enter your general goal" required />
-      <button type="submit">Search</button>
-    </form>
+    <div class="container">
+      <div class="chat-bar">
+        <form id="search-form" method="post">
+          {% csrf_token %}
+          <input type="text" id="search-input" placeholder="Add an item" required />
+        </form>
+        <div class="button-group">
+          <button type="submit" form="search-form">Add</button>
+          <button id="ai-toggle">AI</button>
+        </div>
+      </div>
 
-    <ul id="schedules"></ul>
+      <ul id="schedules"></ul>
+    </div>
 
     <script>
-      const form = document.getElementById("search-form")
-      const input = document.getElementById("search-input")
-      const schedules = document.getElementById("schedules")
+      let aiMode = false;
+
+      const form = document.getElementById("search-form");
+      const input = document.getElementById("search-input");
+      const schedules = document.getElementById("schedules");
+      const toggleBtn = document.getElementById("ai-toggle");
+
+      toggleBtn.addEventListener('click', () => {
+        aiMode = !aiMode;
+        toggleBtn.classList.toggle('ai-mode', aiMode);
+        toggleBtn.classList.toggle('add-mode', !aiMode);
+        input.placeholder = aiMode ? 'Enter your general goal' : 'Add an item';
+      })
 
       // For CSRF Token
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
       form.addEventListener("submit", e => {
         e.preventDefault();   // allows override default submit action
-        const general_goal = input.value.trim();
+        const query = input.value.trim();
 
-        fetch("{% url 'schedule:generate' %}", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-          },
-          body: JSON.stringify({ general_goal: general_goal })
-        })
-        .then(response => response.json())
-        .then(response => {
-          schedules.innerHTML = "";
-          
-          if (response.schedules && response.schedules.length > 0) {
-            response.schedules.forEach(schedule => {
-              const li = document.createElement("li");
-              li.className = "schedule-item";
-              li.textContent = schedule;
-              schedules.appendChild(li);
-            });
+        if (aiMode) {
+          fetch("{% url 'schedule:generate' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken,
+            },
+            body: JSON.stringify({ general_goal: query })
+          })
+          .then(response => response.json())
+          .then(response => {
+            // schedules.innerHTML = "";
+            
+            if (response.schedules && response.schedules.length > 0) {
+              response.schedules.forEach(schedule => {
+                const li = document.createElement("li");
+                li.className = "schedule-item";
+                li.textContent = schedule;
+
+                const removeBtn = document.createElement("span");
+                removeBtn.className = "close";
+                removeBtn.innerHTML = "&times;";
+
+                removeBtn.onclick = () => {
+                  li.remove();
+                };
+
+                li.appendChild(removeBtn);
+                schedules.appendChild(li);
+              });
+            }
+          })
+          .catch(err => {
+            schedules.innerHTML = "<p>Something went wrong.<p>";
+            console.error(`Error: ${err}`)
+          })
+        } else {
+          if (query !== "") {
+            const li = document.createElement("li");
+            li.className = "schedule-item";
+            li.textContent = query;
+
+            const removeBtn = document.createElement("span");
+            removeBtn.className = "close";
+            removeBtn.innerHTML = "&times;";
+
+            removeBtn.onclick = () => {
+              li.remove();
+            };
+
+            li.appendChild(removeBtn);
+
+            schedules.appendChild(li);
+            input.value = '';
           }
-        })
-        .catch(err => {
-          schedules.innerHTML = "<p>Something went wrong.<p>";
-          console.error(`Error: ${err}`)
-        })
+        }
       })
     </script>
   </body>
