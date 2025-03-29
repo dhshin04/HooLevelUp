@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}My Animals{% endblock %}
+
+{% block content %}
+    <h2>My Animals</h2>
+    {% if animals %}
+        <ul>
+            {% for animal in animals %}
+                <li>
+                    <strong>{{ animal.name }}</strong> — Level: {{ animal.level }}<br>
+                    Type: {{ animal.species }}<br>
+                    Progress: {{ animal.progress }}%
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You don't have any animals yet. Go complete some quests to adopt one!</p>
+    {% endif %}
+{% endblock %}

@@ -18,8 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('main.urls')),
+    path('skills/', include('skills.urls', namespace='skills')),
+    path('schedule/', include('schedule.urls', namespace='schedule')),
+    path('metric/', include('metric.urls', namespace='metric')),
     path('admin/', admin.site.urls),
-    path('', include("main.urls")),
-    path('skills/', include("skills.urls")),
-    path('schedule/', include("schedule.urls")),
 ]
