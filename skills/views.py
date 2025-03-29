@@ -4,3 +4,7 @@ from django.http import HttpResponse
 # Create your views here.
 def index(request):
     return HttpResponse('Hello')
+
+
+def skill_detail(request, skill_name):
+    return HttpResponse(f'Some Skill: {skill_name}')
