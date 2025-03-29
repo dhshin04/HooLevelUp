@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'main',
     'skills',
     'schedule',
+    'metric',
     'bootstrap5',
 ]
 
