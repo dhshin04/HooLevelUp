@@ -1,0 +1,62 @@
+{% load static %} 
+{% load bootstrap5 %} 
+{% bootstrap_css %} 
+{% bootstrap_javascript %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Build Your Schedule</title>
+  </head>
+  <body>
+    <form id="search-form" method="post">
+      {% csrf_token %}
+      <input type="text" id="search-input" placeholder="Enter your general goal" required />
+      <button type="submit">Search</button>
+    </form>
+
+    <ul id="schedules"></ul>
+
+    <script>
+      const form = document.getElementById("search-form")
+      const input = document.getElementById("search-input")
+      const schedules = document.getElementById("schedules")
+
+      // For CSRF Token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      form.addEventListener("submit", e => {
+        e.preventDefault();   // allows override default submit action
+        const general_goal = input.value.trim();
+
+        fetch("{% url 'schedule:generate' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ general_goal: general_goal })
+        })
+        .then(response => response.json())
+        .then(response => {
+          schedules.innerHTML = "";
+          
+          if (response.schedules && response.schedules.length > 0) {
+            response.schedules.forEach(schedule => {
+              const li = document.createElement("li");
+              li.className = "schedule-item";
+              li.textContent = schedule;
+              schedules.appendChild(li);
+            });
+          }
+        })
+        .catch(err => {
+          schedules.innerHTML = "<p>Something went wrong.<p>";
+          console.error(`Error: ${err}`)
+        })
+      })
+    </script>
+  </body>
+</html>
