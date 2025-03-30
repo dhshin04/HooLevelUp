@@ -26,14 +26,17 @@
       {% csrf_token %}
       <!-- Redirect to main screen after login -->
       <input type="hidden" name="next" value="{% url 'main:main_screen' %}">
+
       {% if form.errors %}
         <div class="alert alert-danger">
           Please correct the error{{ form.errors|pluralize }} below.
         </div>
       {% endif %}
+
       <div class="mb-3">
         <label for="id_username" class="form-label">Username</label>
-        <input type="text" name="username" autofocus class="form-control" id="id_username" required>
+        <input type="text" name="username" autofocus class="form-control" id="id_username"
+               value="{{ form.username.value|default_if_none:'' }}" required>
       </div>
       <div class="mb-3">
         <label for="id_password" class="form-label">Password</label>
@@ -41,8 +44,13 @@
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
     </form>
+    <div class="text-center mt-3">
+      <small class="text-muted">Use test account: <code>testuser</code> / <code>testpass123</code></small>
+    </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 

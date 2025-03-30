@@ -19,6 +19,8 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', include('main.urls')),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='main:main_screen'), name='logout'),
     path('skills/', include('skills.urls', namespace='skills')),
     path('schedule/', include('schedule.urls', namespace='schedule')),
     path('metric/', include('metric.urls', namespace='metric')),
