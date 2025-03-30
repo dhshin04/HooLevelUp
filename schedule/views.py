@@ -90,7 +90,8 @@ def complete_schedule(request):
 
         # ✅ Mark checked as complete
         models.Task.objects.filter(id__in=checked_ids).update(completed=True)
-        main.models.UserQuest.objects.filter(user=request.user).update(is_completed=True)
+        daily_quest = main.models.Quest.objects.filter(name='1 task').first()
+        main.models.UserQuest.objects.filter(user=request.user, quest=daily_quest).update(is_completed=True)
 
         # ❌ Mark unchecked as incomplete
         unchecked_ids = set(all_ids) - set(map(int, checked_ids))
