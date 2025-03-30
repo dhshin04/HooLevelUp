@@ -18,6 +18,11 @@ class Inventory(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     is_used = models.BooleanField(default=False)
 
+# ------------- XP -------------
+class Xp(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    progress = models.PositiveIntegerField(default=1)
+
 # ---------- Quests ----------
 class Quest(models.Model):
     name = models.CharField(max_length=100)
@@ -26,6 +31,7 @@ class Quest(models.Model):
     reward_xp = models.IntegerField(default=0)
     reward_item = models.ManyToManyField(Item, blank=True)
     hidden = models.BooleanField(default=False)
+    is_daily = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -51,7 +57,12 @@ class ActivityLog(models.Model):
 
 # ---------- Animals ----------
 class Animal(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='animals')
     name = models.CharField(max_length=100)
+    species = models.CharField(max_length=100,default="animal")
     level = models.IntegerField(default=1)
     xp = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+

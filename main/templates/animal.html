@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <!-- Inventory Column -->
+  <div class="col-md-4" id="inventory-panel">
+    <h4>Inventory</h4>
+    <div class="list-group">
+      {% for item in inventory_items %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width:40px; height:40px;">
+          <div class="ms-2">
+            <div>{{ item.name }}</div>
+            <small>{{ item.quantity }} in stock</small>
+          </div>
+          <div>
+            <!-- When hovered, you can show a tooltip with item description using Bootstrap tooltips -->
+            <a href="#" data-bs-toggle="tooltip" title="{{ item.description }}">Info</a>
+          </div>
+        </div>
+      {% empty %}
+        <p>No items in inventory.</p>
+      {% endfor %}
+    </div>
+  </div>
+  <!-- Main Animal Detail Column -->
+  <div class="col-md-8">
+    <h2>{{ animal.name }}</h2>
+    <p>Species: {{ animal.species }}</p>
+    <!-- Additional details about the animal -->
+  </div>
+</div>
+{% endblock %}

@@ -8,7 +8,6 @@ from llm_client import call_gemini
 from . import prompts
 from . import models
 
-# Create your views here.
 def index(request):
     schedule = models.Schedule.objects.prefetch_related('tasks').first()
     return render(request, 'schedule/home.html', {'schedule': schedule})
