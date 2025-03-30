@@ -1,20 +1,40 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}My Animals{% endblock %}
 
 {% block content %}
     <h2>My Animals</h2>
+    <p>Logged in as: {{ request.user }}</p>
+
+
     {% if animals %}
         <ul>
             {% for animal in animals %}
                 <li>
                     <strong>{{ animal.name }}</strong> — Level: {{ animal.level }}<br>
-                    Type: {{ animal.species }}<br>
-                    Progress: {{ animal.progress }}%
+                    Species: {{ animal.species }}<br>
+                    XP: {{ animal.xp }}
                 </li>
             {% endfor %}
         </ul>
     {% else %}
         <p>You don't have any animals yet. Go complete some quests to adopt one!</p>
     {% endif %}
+
+    <!-- Farm Section (if you have decoration data, otherwise this can be removed or commented out) -->
+    <div class="farm" style="position: relative; background: url('{% static 'images/farm_bg.png' %}') no-repeat center center; background-size: cover; height: 500px;">
+      {% comment %}
+      Example: if you later pass a "decorations" variable, you can loop over them:
+      {% for decoration in decorations %}
+        <img src="{{ decoration.image.url }}" class="decoration" alt="{{ decoration.name }}">
+      {% endfor %}
+      {% endcomment %}
+      {% for animal in animals %}
+        <!-- Since Animal model doesn't have an image field by default, you might remove this block or add an image field -->
+        <div class="farm-animal" style="position: absolute;">
+          <!-- Placeholder image or leave empty -->
+          <img src="{% static 'images/placeholder.png' %}" alt="{{ animal.name }}">
+        </div>
+      {% endfor %}
+    </div>
 {% endblock %}
