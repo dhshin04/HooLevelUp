@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}HooLevelUp{% endblock %}</title>
-  <!-- Bootstrap CSS (v5) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -32,45 +31,65 @@
       font-size: 1rem;
       margin-bottom: 4px;
     }
+    .home-btn {
+      margin-right: 1rem;
+    }
   </style>
 </head>
 <body>
-  <!-- Top Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm border-bottom">
-    <div class="container-fluid">
-      {% if request.user.is_authenticated %}
-        <div class="d-flex align-items-center">
-          <!-- Quest Dropdown -->
-          <div class="dropdown me-3">
-            <a class="btn btn-light dropdown-toggle" href="#" id="questDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm border-bottom">
+  <div class="container-fluid">
+    {% if request.user.is_authenticated %}
+      <div class="d-flex align-items-center">
+        <div class="dropdown me-3">
+          <a class="btn btn-light dropdown-toggle" href="#" id="questDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if completed_quest_exists %}
+              <img src="{% static 'images/quest_icon_green.png' %}" alt="Quests">
+            {% else %}
               <img src="{% static 'images/quest_icon.png' %}" alt="Quests">
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="questDropdown">
-              {% for quest in quests %}
-                <li>
-                  <a class="dropdown-item" href="#">
-                    {{ quest.name }}
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="questDropdown">
+            {% for uq in user_quests %}
+              <li>
+                {% if uq.is_completed %}
+                  <a class="dropdown-item text-success grant-rewards" data-userquest-id="{{ uq.id }}" href="#">
+                    {{ uq.quest.name }}<br>
+                    <small>{{ uq.quest.description }}</small><br>
+                    <small>Reward: {{ uq.quest.reward_xp }} XP, {{ uq.quest.reward_coins }} Coins</small>
                   </a>
-                </li>
-              {% empty %}
-                <li><span class="dropdown-item-text">No quests available</span></li>
-              {% endfor %}
-            </ul>
+                {% else %}
+                  <a class="dropdown-item" href="#">
+                    {{ uq.quest.name }}<br>
+                    <small>{{ uq.quest.description }}</small><br>
+                    <small>Reward: {{ uq.quest.reward_xp }} XP, {{ uq.quest.reward_coins }} Coins</small>
+                  </a>
+                {% endif %}
+              </li>
+            {% empty %}
+              <li><span class="dropdown-item-text">No quests available</span></li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="user-info">
+          <div class="username fw-bold">
+            Hi, {{ request.user.username }} | Coins: <span id="coinCount">{{ coins }}</span>
           </div>
-          <!-- Username, Coins & XP Progress Bar -->
-          <div class="user-info">
-            <div class="username fw-bold">Hi, {{ request.user.username }} | Coins: {{ coins }}</div>
-            <div class="progress position-relative xp-progress">
-              <div class="progress-bar bg-success" role="progressbar"
-                   style="width: {{ xp }}%;" aria-valuenow="{{ xp }}" aria-valuemin="0" aria-valuemax="100">
-              </div>
-              <span class="position-absolute top-50 start-50 translate-middle fw-bold text-white">
-                LV {{ level|default:"1" }}
-              </span>
+          <div class="progress position-relative xp-progress" id="xpProgressContainer">
+            <div class="progress-bar bg-success" role="progressbar"
+                 style="width: {{ xp_percentage }}%;" id="xpProgress"
+                 aria-valuenow="{{ xp_percentage }}" aria-valuemin="0" aria-valuemax="100">
             </div>
+            <span class="position-absolute top-50 start-50 translate-middle fw-bold text-white">
+              LV {{ level }} ({{ user_xp }}/{{ xp_needed }})
+            </span>
           </div>
         </div>
-        <!-- Right Side: Menu Dropdown with Logout -->
+      </div>
+      <div class="d-flex align-items-center">
+        <a class="btn btn-link home-btn" href="{% url 'main:main_screen' %}">
+          <img src="{% static 'images/home_icon.png' %}" alt="Home">
+        </a>
         <div class="dropdown">
           <a class="btn btn-light dropdown-toggle" href="#" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="{% static 'images/menu_icon.png' %}" alt="Menu">
@@ -82,22 +101,21 @@
             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
           </ul>
         </div>
-      {% else %}
-        <div class="d-flex justify-content-end w-100">
-          <a class="btn btn-primary me-2" href="{% url 'login' %}">Login</a>
-        </div>
-      {% endif %}
-    </div>
-  </nav>
+      </div>
+    {% else %}
+      <div class="d-flex justify-content-end w-100">
+        <a class="btn btn-primary me-2" href="{% url 'login' %}">Login</a>
+        <a class="btn btn-secondary" href="{% url 'register' %}">Register</a>
+      </div>
+    {% endif %}
+  </div>
+</nav>
 
-  <!-- Main Content -->
-  <main class="container mt-3">
-    {% block content %}
-    {% endblock %}
-  </main>
+<main class="container mt-3">
+  {% block content %}{% endblock %}
+</main>
 
-  <!-- Bottom Navbar (Only shown for authenticated users) -->
-  {% if request.user.is_authenticated %}
+{% if request.user.is_authenticated %}
   <nav class="navbar navbar-dark bg-light bottom-nav border-top">
     <div class="container-fluid d-flex justify-content-around">
       <a class="nav-link text-center" href="{% url 'skills:skills' %}">Skills</a>
@@ -105,17 +123,41 @@
       <a class="nav-link text-center" href="{% url 'metric:metric' %}">Metrics</a>
     </div>
   </nav>
-  {% endif %}
+{% endif %}
 
-  <!-- Bootstrap JS Bundle (includes Popper) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll('.grant-rewards').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var uqId = this.getAttribute('data-userquest-id');
+      var url = "{% url 'main:grant_rewards_for_quest' 0 %}".replace('0', uqId);
+      var clickedLink = this;
+      fetch(url, {
+        method: "GET",
+        credentials: "include"
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("coinCount").innerText = data.coins;
+        const progress = document.getElementById("xpProgress");
+        progress.style.width = data.xp_percentage + "%";
+        progress.setAttribute("aria-valuenow", data.xp_percentage);
+        document.querySelector("#xpProgressContainer span").innerText = `LV ${data.level} (${data.xp}/${data.xp_needed})`;
+        if (data.reset) {
+          clickedLink.classList.remove("text-success");
+        } else {
+          clickedLink.parentElement.remove();
+        }
+      })
+      .catch(error => console.error("Error:", error));
+    });
+  });
+});
+</script>
 </body>
 </html>
-
-
-
-
-
 
 
 

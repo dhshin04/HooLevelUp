@@ -7,6 +7,7 @@ class Item(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     type = models.CharField(max_length=50, choices=[('decor', 'Decoration'), ('level_up', 'Level Up')])
+    xp_reward = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
