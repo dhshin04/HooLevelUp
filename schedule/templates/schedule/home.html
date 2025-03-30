@@ -1,0 +1,122 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Schedule</title>
+
+  <style>
+    body {
+      padding: 3em;
+      background-color: #f9f9f9;
+    }
+
+    .schedule-card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+
+    .schedule-header h5 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .schedule-header p {
+      color: #666;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .task-item {
+      background-color: #f8f9fa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-check-input {
+      transform: scale(1.2);
+    }
+
+    .form-check-label {
+      margin-bottom: 0;
+      font-weight: 500;
+    }
+
+    .task-time {
+      font-size: 0.95rem;
+      color: #555;
+      white-space: nowrap;
+      margin-left: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{% url 'main:main_screen' %}" class="btn btn-secondary">
+      ⬅️ Return to Home
+    </a>
+    {% if schedule %}
+      <div class="schedule-card">
+        <div class="schedule-header">
+          <h5>{{ schedule.name }}</h5>
+          <p><strong>Created:</strong> {{ schedule.created_at }}</p>
+        </div>
+
+        <form method="post" action="{% url 'schedule:complete' %}">
+          {% csrf_token %}
+          <div class="task-list mt-4">
+            {% for task in schedule.tasks.all %}
+              <div class="task-item">
+                <div class="task-left">
+                  <input class="form-check-input"
+                         type="checkbox"
+                         name="completed_tasks"
+                         value="{{ task.id }}"
+                         id="task-{{ forloop.counter }}"
+                         {% if task.completed %}checked{% endif %}>
+                  <label class="form-check-label {% if task.completed %}text-decoration-line-through text-muted{% endif %}"
+                         for="task-{{ forloop.counter }}">
+                    {{ task.description }}
+                  </label>
+                </div>
+                <span class="task-time">{{ task.estimated_time }}</span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'schedule:build' %}" class="btn btn-outline-primary">
+              🛠 Build New Schedule
+            </a>
+            <button type="submit" class="btn btn-success">
+              📝 Update
+            </button>
+          </div>
+        </form>
+      </div>
+    {% else %}
+      <div class="alert alert-info">No schedules saved yet.</div>
+    {% endif %}
+  </div>
+</body>
+</html>
