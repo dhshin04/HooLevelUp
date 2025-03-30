@@ -98,13 +98,13 @@
             <li><a class="dropdown-item" href="{% url 'main:settings' %}">Settings</a></li>
             <li><a class="dropdown-item" href="{% url 'main:profile' %}">Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+            <li><a class="dropdown-item" href="{% url 'main:logout' %}">Logout</a></li>
           </ul>
         </div>
       </div>
     {% else %}
       <div class="d-flex justify-content-end w-100">
-        <a class="btn btn-primary me-2" href="{% url 'login' %}">Login</a>
+        <a class="btn btn-primary me-2" href="{% url 'main:login' %}">Login</a>
       </div>
     {% endif %}
   </div>

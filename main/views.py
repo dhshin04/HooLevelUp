@@ -1,10 +1,15 @@
 import math
 from datetime import date
 from django.conf import settings
-from django.shortcuts import render, get_object_or_404
+from django.db import IntegrityError
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from .models import Item, Inventory, Quest, UserQuest, Coin, Animal
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login as auth_login, authenticate
+from django.contrib import messages
+from .tests import add_test_data, complete_all_quest,complete_specific_quest
 
 def get_user_coins(user):
     coin_obj = Coin.objects.filter(user=user).first()
@@ -45,6 +50,38 @@ def main_screen(request):
     return render(request, 'main.html', context)
 
 
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            try:
+                user = form.save()
+                auth_login(request, user)
+                messages.success(request, 'Registration successful.')
+                return redirect('main:main_screen')
+            except IntegrityError:
+                form.add_error('username', 'This username is already taken.')
+        else:
+            messages.error(request, 'Registration failed. Please try again.')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'registration/register.html', {'form': form})
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            return redirect('main:main_screen')
+        else:
+            messages.error(request, 'Invalid username or password.')
+    else:
+        form = AuthenticationForm()
+    return render(request, '../templates/registration/login.html', {'form': form})
+
 def animal(request, identifier):
     animal_obj = get_object_or_404(Animal, id=identifier, user=request.user)
     inventory_items = Inventory.objects.filter(user=request.user, item__type='level_up', quantity__gt=0)
@@ -63,87 +100,6 @@ def settings_view(request):
 
 def profile(request):
     return render(request, 'profile.html')
-
-def add_test_data(request):
-    if not settings.DEBUG:
-        return HttpResponse("Not allowed", status=403)
-
-    # Create or get test user
-    user, created = User.objects.get_or_create(username="testuser")
-    if created:
-        user.set_password("testpass123")
-        user.save()
-
-    # Clear existing test data
-    Item.objects.all().delete()
-    Inventory.objects.all().delete()
-    Quest.objects.all().delete()
-    UserQuest.objects.all().delete()
-    Coin.objects.all().delete()
-    Animal.objects.all().delete()
-
-    # Create items
-    i1 = Item.objects.create(
-        name="Golden Sword",
-        description="A mighty sword that increases XP.",
-        type="level_up",
-        xp_reward=50
-    )
-    i2 = Item.objects.create(
-        name="Flower Vase",
-        description="A beautiful vase for decoration.",
-        type="decor"
-    )
-
-    # Add items to inventory
-    Inventory.objects.create(user=user, item=i1, quantity=1)
-    Inventory.objects.create(user=user, item=i2, quantity=2)
-
-    # Create quests
-    q1 = Quest.objects.create(
-        name="Collect 10 apples",
-        description="Gather apples from the orchard.",
-        reward_coins=50,
-        reward_xp=20,
-        hidden=False,
-        is_daily=True
-    )
-    q2 = Quest.objects.create(
-        name="Defeat the dragon",
-        description="Slay the dragon terrorizing the village.",
-        reward_coins=200,
-        reward_xp=100,
-        hidden=False,
-        is_daily=False
-    )
-
-    # Assign quests to user
-    UserQuest.objects.create(user=user, quest=q1, date_started=date.today(), date_ended=date.today(), is_completed=False)
-    UserQuest.objects.create(user=user, quest=q2, date_started=date.today(), date_ended=date.today(), is_completed=False)
-
-    # Create coin account
-    Coin.objects.get_or_create(user=user, defaults={'coins': 100})
-
-    # Create animals
-    Animal.objects.create(user=user, name="Lion", species="Panthera leo", level=1, xp=10)
-    Animal.objects.create(user=user, name="Tiger", species="Panthera tigris", level=2, xp=50)
-
-    return HttpResponse("Test data added successfully! You can now login as 'testuser' with password 'testpass123'")
-
-def complete_test_quest(request):
-    if not settings.DEBUG:
-        return HttpResponse("Not allowed", status=403)
-    if not request.user.is_authenticated:
-        return HttpResponse("You must be logged in to complete quests.", status=403)
-    user_quests = UserQuest.objects.filter(user=request.user, is_completed=False)
-    if not user_quests.exists():
-        return HttpResponse("No incomplete quests found for the current user.")
-    completed_names = []
-    for uq in user_quests:
-        uq.is_completed = True
-        uq.save()
-        completed_names.append(uq.quest.name)
-    return HttpResponse(f"Quests marked as complete: {', '.join(completed_names)}")
 
 def grant_rewards_for_quest(request, userquest_id):
     if not settings.DEBUG:
@@ -217,3 +173,21 @@ def apply_item(request, animal_name):
         "new_quantity": inventory.quantity,
         "new_xp_percent": xp_percent
     })
+
+
+def add_test_data_view(request):
+    return add_test_data(request)
+
+
+def complete_all_quest_view(request):
+    return complete_all_quest(request)
+
+
+def complete_specific_quest_view(request, quest_id):
+    if not settings.DEBUG:
+        return HttpResponse("Not allowed", status=403)
+    if not request.user.is_authenticated:
+        return HttpResponse("You must be logged in to complete quests.", status=403)
+
+    result_message = complete_specific_quest(request.user, quest_id)
+    return HttpResponse(result_message)

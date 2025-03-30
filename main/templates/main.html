@@ -4,6 +4,15 @@
 
 {% block content %}
   <h2>My Animals</h2>
+
+  {% if request.user.is_authenticated %}
+    <div class="mb-3">
+      <h5>Demo Controls</h5>
+      <button class="btn btn-secondary me-2" onclick="location.href='{% url 'main:add_test_data' %}'">Add Test Data</button>
+      <button class="btn btn-success" onclick="location.href='{% url 'main:complete_all_quests' %}'">Complete All Quests</button>
+    </div>
+  {% endif %}
+
   {% if animals %}
     <ul class="list-group">
       {% for animal in animals %}
@@ -11,7 +20,7 @@
           <a href="{% url 'main:animal' animal.id %}" class="text-decoration-none text-dark">
             <strong>{{ animal.name }}</strong> — Level: {{ animal.level }}<br>
             Species: {{ animal.species }}<br>
-            XP: {{ animal.xp }}%
+            XP: {{ animal.xp }}
           </a>
         </li>
       {% endfor %}
@@ -21,7 +30,6 @@
   {% endif %}
 
   <div class="farm" style="position: relative; background: url('{% static 'images/farm_bg.png' %}') no-repeat center center; background-size: cover; height: 500px;">
-    {# If you have decoration data, include it here #}
     {% for animal in animals %}
       <div class="farm-animal" style="position: absolute;">
         {% if animal.image %}
@@ -37,4 +45,5 @@
     {% endfor %}
   </div>
 {% endblock %}
+
 
