@@ -86,7 +86,14 @@
           </li>
         {% endfor %}
       </ul>
-      <button type="submit" class="btn btn-primary" id="nextBtn">Submit</button>
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'schedule:build' %}" class="btn btn-secondary align-middle py-2 px-3">
+          Back
+        </a>
+        <button type="submit" class="btn btn-primary align-middle py-2 px-3" id="nextBtn">
+          Submit
+        </button>
+      </div>
     </form>
   </div>
 

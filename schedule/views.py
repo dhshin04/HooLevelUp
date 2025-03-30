@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseServerError
 from django.contrib.auth.models import User
+from django.utils import timezone
 import json
 
 from llm_client import call_gemini
@@ -9,8 +10,8 @@ from . import models
 
 # Create your views here.
 def index(request):
-    schedule = models.Schedule.objects.all().prefetch_related('tasks')
-    return render(request, 'schedule/home.html', {'schedules': schedule})
+    schedule = models.Schedule.objects.prefetch_related('tasks').first()
+    return render(request, 'schedule/home.html', {'schedule': schedule})
 
 
 def build(request):
@@ -61,6 +62,7 @@ def schedule_builder(request):
 
     # Update the name or timestamp if needed
     schedule.name = "My Schedule"
+    schedule.created_at = timezone.now()
     schedule.save()
 
     # Clear existing tasks before adding new ones
@@ -74,3 +76,22 @@ def schedule_builder(request):
         )
 
     return redirect('schedule:today_schedule')
+
+
+def complete_schedule(request):
+    if request.method == 'POST':
+        schedule = models.Schedule.objects.prefetch_related('tasks').first()
+        if not schedule:
+            return redirect('schedule:today_schedule')
+
+        checked_ids = request.POST.getlist('completed_tasks')
+        all_ids = [task.id for task in schedule.tasks.all()]
+
+        # ✅ Mark checked as complete
+        models.Task.objects.filter(id__in=checked_ids).update(completed=True)
+
+        # ❌ Mark unchecked as incomplete
+        unchecked_ids = set(all_ids) - set(map(int, checked_ids))
+        models.Task.objects.filter(id__in=unchecked_ids).update(completed=False)
+
+        return redirect('schedule:today_schedule')

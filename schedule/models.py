@@ -17,6 +17,7 @@ class Task(models.Model):
     schedule = models.ForeignKey(Schedule, related_name='tasks', on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
     estimated_time = models.CharField(max_length=255)
+    completed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.description
