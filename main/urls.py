@@ -24,6 +24,6 @@ urlpatterns = [
     path('add-test-data/', views.add_test_data_view, name='add_test_data'),
     path('complete-all-quests/', views.complete_all_quest_view, name='complete_all_quests'),
     path('complete-quest/<int:quest_id>/', views.complete_specific_quest_view, name='complete_specific_quest'),
-
+    path('add_quest/', views.add_quest, name='add_quest'),
 ]
 

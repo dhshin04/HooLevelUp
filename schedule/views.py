@@ -5,8 +5,10 @@ from django.utils import timezone
 import json
 
 from llm_client import call_gemini
+import main.models
 from . import prompts
 from . import models
+import main
 
 def index(request):
     schedule = models.Schedule.objects.prefetch_related('tasks').first()
@@ -53,9 +55,9 @@ def schedule_builder(request):
     data = request.POST.get('items')
     schedules = json.loads(data)
 
-    dummy_user, _ = User.objects.get_or_create(username='demo')
+    # dummy_user, _ = User.objects.get_or_create(username='demo')
     schedule, created = models.Schedule.objects.get_or_create(
-        user=dummy_user,
+        user=request.user,
         defaults={'name': 'My Schedule'},
     )
 
@@ -88,6 +90,7 @@ def complete_schedule(request):
 
         # ✅ Mark checked as complete
         models.Task.objects.filter(id__in=checked_ids).update(completed=True)
+        main.models.UserQuest.objects.filter(user=request.user).update(is_completed=True)
 
         # ❌ Mark unchecked as incomplete
         unchecked_ids = set(all_ids) - set(map(int, checked_ids))

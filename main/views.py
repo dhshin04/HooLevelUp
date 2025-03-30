@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from .models import Item, Inventory, Quest, UserQuest, Coin, Animal
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .tests import add_test_data, complete_all_quest,complete_specific_quest
 
