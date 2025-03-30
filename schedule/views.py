@@ -11,6 +11,9 @@ def index(request):
 
 
 def build(request):
+    if request.method == 'POST':
+        schedules = request.POST['items']
+        return render(request, 'schedule/final_build.html', {'schedules': schedules})
     return render(request, 'schedule/build.html')
 
 

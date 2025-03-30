@@ -11,6 +11,10 @@
     <title>Build Your Schedule</title>
 
     <style>
+      body {
+        padding: 3em;
+      }
+
       .chat-bar {
         display: flex;
         align-items: center;
@@ -72,6 +76,21 @@
         padding: 0;
         margin-top: 1.5rem;
         width: 100%;
+
+        /* Required to prevent shrinking */
+        height: 30rem;           /* This makes the box always 300px tall */
+        overflow-y: auto;        /* Adds scrollbar when li items overflow */
+        border: 1px solid #ccc;  /* Optional styling */
+        border-radius: 6px;      /* Optional rounded corners */
+        background-color: #fff;  /* Optional background */
+        box-sizing: border-box;
+      }
+
+
+      /* Optional: style list items */
+      #schedules li {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
       }
 
       .schedule-item {
@@ -112,7 +131,12 @@
         </div>
       </div>
 
-      <ul id="schedules"></ul>
+      <form id="next-form" method="post" action="{% url 'schedule:build' %}">
+        {% csrf_token %}
+        <input type="hidden" name="items" id="itemsInput">
+        <ul id="schedules"></ul>
+        <button type="submit" class="btn btn-primary" id="nextBtn">Next</button>
+      </form>
     </div>
 
     <script>
@@ -194,6 +218,11 @@
           }
         }
       })
+
+      document.getElementById("next-form").addEventListener('submit', e => {
+        const items = Array.from(document.querySelectorAll("#schedules li")).map(li => li.childNodes[0].textContent.trim());
+        document.getElementById('itemsInput').value = JSON.stringify(items);
+      });
     </script>
   </body>
 </html>
