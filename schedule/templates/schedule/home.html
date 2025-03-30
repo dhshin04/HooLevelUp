@@ -1,0 +1,13 @@
+{% for schedule in schedules %}
+  <div class="card mb-4 p-3">
+    <h5>{{ schedule.name }}</h5>
+    <p><strong>Created:</strong> {{ schedule.created_at }}</p>
+    <ul>
+      {% for task in schedule.tasks.all %}
+        <li>{{ task.description }} - {{ task.estimated_time }} min</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% empty %}
+  <p>No schedules saved yet.</p>
+{% endfor %}
