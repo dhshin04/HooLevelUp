@@ -191,3 +191,30 @@ def complete_specific_quest_view(request, quest_id):
 
     result_message = complete_specific_quest(request.user, quest_id)
     return HttpResponse(result_message)
+
+
+@login_required
+def add_quest(request):
+    if not settings.DEBUG:
+        return HttpResponse("Not allowed", status=403)
+
+    user = request.user
+
+    q1 = Quest.objects.create(
+        name="1 task",
+        description="Finish one task in schedule",
+        reward_coins=50,
+        reward_xp=20,
+        hidden=False,
+        is_daily=True
+    )
+
+    UserQuest.objects.create(
+        user=user,
+        quest=q1,
+        date_started=date.today(),
+        date_ended=date.today(),
+        is_completed=False
+    )
+
+    return HttpResponse("Data added successfully!")
